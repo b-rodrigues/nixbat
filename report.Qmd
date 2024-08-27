@@ -1,0 +1,13 @@
+---
+title: "My document"
+format:
+  html:
+    toc: true
+    embed_resources: true
+---
+
+# Data Report
+
+This report shows a scatter plot of the generated random data.
+
+![Scatter Plot](plot.png)
