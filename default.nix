@@ -17,7 +17,11 @@ let
       scikit-learn
       pandas
     ];
-    src = pkgs.lib.cleanSource ./.;
+    src = pkgs.lib.fileset.toSource {
+          root = ./.;
+          # Only include report.Qmd in the source
+          fileset = ./generate_data.py;
+    };
     buildPhase = ''
       python generate_data.py
     '';
@@ -73,7 +77,11 @@ pkgs.stdenv.mkDerivation {
     pkgs.quarto
     tex
   ];
-  src = pkgs.lib.cleanSource ./.;
+  src = pkgs.lib.fileset.toSource {
+        root = ./.;
+        # Only include report.Qmd in the source
+        fileset = ./report.Qmd;
+  };
   buildPhase = ''
 
     cp ${generatePlot}/plot.png .
