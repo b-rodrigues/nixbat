@@ -37,7 +37,7 @@ let
     buildPhase = ''
       python -c "
 import pandas as pd
-from python_scripts import download_iris
+from python_functions import download_iris
 
 iris_raw = download_iris('${iris_path}')
 
@@ -58,7 +58,7 @@ iris_raw.to_csv('iris_raw.csv', index=False)
     buildPhase = ''
       python -c "
 import pandas as pd
-from python_scripts import process_iris
+from python_functions import process_iris
 
 iris = process_iris('${downloadCsv}/iris_raw.csv')
 
