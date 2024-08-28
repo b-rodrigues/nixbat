@@ -21,7 +21,7 @@ let
   pythonEnv = pkgs.python312.withPackages (ps: with ps; [ pandas ]);
 
   # Common python sources
-  python_src = pkgs.lib.fileset.toSource {
+  pythonSrc = pkgs.lib.fileset.toSource {
     root = ./.;
     fileset = ./python_functions.py;
   };
@@ -33,7 +33,7 @@ let
   downloadCsv = pkgs.stdenv.mkDerivation {
     name = "download-csv";
     buildInputs =  [ pythonEnv ];
-    src = python_src;
+    src = pythonSrc;
     buildPhase = ''
       python -c "
 import pandas as pd
@@ -54,7 +54,7 @@ iris_raw.to_csv('iris_raw.csv', index=False)
   cleanCsv = pkgs.stdenv.mkDerivation {
     name = "clean-csv";
     buildInputs =  [ pythonEnv ];
-    src = python_src;
+    src = pythonSrc;
     buildPhase = ''
       python -c "
 import pandas as pd
