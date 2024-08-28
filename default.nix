@@ -23,7 +23,7 @@ let
   # Common python sources
   python_src = pkgs.lib.fileset.toSource {
     root = ./.;
-    fileset = ./python_scripts.py;
+    fileset = ./python_functions.py;
   };
 
 
