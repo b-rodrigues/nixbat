@@ -1,5 +1,5 @@
 ---
-title: "My document"
+title: "Versicolor rules"
 format:
   html:
     toc: true
@@ -8,6 +8,6 @@ format:
 
 # Data Report
 
-This report shows a scatter plot of the generated random data.
+Nice scatter plot of iris
 
 ![Scatter Plot](plot.png)

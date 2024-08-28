@@ -10,20 +10,60 @@ let
     }
   );
 
-  # Derivation to generate the CSV file using Python
-  generateCsv = pkgs.stdenv.mkDerivation {
-    name = "generate-csv";
-    buildInputs = with pkgs.python312Packages; [
-      scikit-learn
-      pandas
-    ];
-    src = pkgs.lib.fileset.toSource {
-          root = ./.;
-          # Only include report.Qmd in the source
-          fileset = ./generate_data.py;
-    };
+  # Because building happens in sandbox that cannot connect to the internet
+  # we need to download assets beforehand
+  iris_path = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/b-rodrigues/nixbat/7c319bcdbe15e7f7182e7685b8de176a40d0bde9/iris.csv";
+    hash = "sha256-2H6THCXKxIt4yxnDDY+AZRmbxqs7FndCp4MqaAR1Cpw=";
+  };
+
+  # Common python dependencies to use in my intermediary inputs
+  pythonEnv = pkgs.python312.withPackages (ps: with ps; [ pandas ]);
+
+  # Common python sources
+  python_src = pkgs.lib.fileset.toSource {
+    root = ./.;
+    fileset = ./python_scripts.py;
+  };
+
+
+  # Derivation to download the raw data
+  # Doesn’t really download the data is it was downloaded before
+  # but instead, passes the path to the data to the function
+  downloadCsv = pkgs.stdenv.mkDerivation {
+    name = "download-csv";
+    buildInputs =  [ pythonEnv ];
+    src = python_src;
     buildPhase = ''
-      python generate_data.py
+      python -c "
+import pandas as pd
+from python_scripts import download_iris
+
+iris_raw = download_iris('${iris_path}')
+
+iris_raw.to_csv('iris_raw.csv', index=False)
+      "
+    '';
+    installPhase = ''
+      mkdir -p $out
+      cp iris_raw.csv $out/
+    '';
+  };
+
+  # Derivation to clean CSV file using Python
+  cleanCsv = pkgs.stdenv.mkDerivation {
+    name = "clean-csv";
+    buildInputs =  [ pythonEnv ];
+    src = python_src;
+    buildPhase = ''
+      python -c "
+import pandas as pd
+from python_scripts import process_iris
+
+iris = process_iris('${downloadCsv}/iris_raw.csv')
+
+iris.to_csv('iris.csv', index=False)
+      "
     '';
     installPhase = ''
       mkdir -p $out
@@ -46,11 +86,11 @@ let
       library(ggplot2)
       library(janitor)
 
-      iris <- read.csv('${generateCsv}/iris.csv') |>
+      iris <- read.csv('${cleanCsv}/iris.csv') |>
         clean_names() |>
-        transform(species = as.character(target))
+        transform(species = as.character(species))
 
-      p <- ggplot(iris, aes(x = sepal_length_cm, y = sepal_width_cm, color = species)) +
+      p <- ggplot(iris, aes(x = sepal_length, y = sepal_width, color = species)) +
           geom_point(size = 3) +                
           labs(title = 'Sepal Length vs Sepal Width',
                x = 'Sepal Length',           
